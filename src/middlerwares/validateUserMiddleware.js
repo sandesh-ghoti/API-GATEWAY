@@ -1,4 +1,7 @@
+const { UserRepository } = require("../repositories");
+const userRepository = new UserRepository();
 const { ErrorResponse } = require("../utils/common");
+const { validateAccessToken } = require("../utils/common/auth");
 const AppError = require("../utils/errors/appError");
 const { StatusCodes } = require("http-status-codes");
 async function validateUserSignInReq(req, res, next) {
@@ -31,4 +34,42 @@ async function validateUserSignUpReq(req, res, next) {
   }
   next();
 }
-module.exports = { validateUserSignInReq, validateUserSignUpReq };
+async function authentication(req, res, next) {
+  try {
+    if (
+      !req.headers ||
+      !req.headers.authorization ||
+      !req.headers.authorization.startsWith("Bearer")
+    ) {
+      throw new AppError(
+        ["authorization header is required"],
+        StatusCodes.BAD_REQUEST
+      );
+    }
+    let accessToken = req.headers.authentication.split(" ")[1];
+    //if accesstoken valid
+    let id = validateAccessToken(accessToken);
+    // validated user
+    let user = await userRepository.id(id);
+    if (!user) throw new AppError(["user not found"], StatusCodes.BAD_REQUEST);
+    req.id = id;
+    next();
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    if (error.name == "JsonWebTokenError") {
+      throw new AppError("Invalid JWT token", StatusCodes.BAD_REQUEST);
+    }
+    if (error.name == "TokenExpiredError") {
+      throw new AppError("JWT token expired", StatusCodes.BAD_REQUEST);
+    }
+    throw new AppError(
+      "Something went wrong",
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+module.exports = {
+  validateUserSignInReq,
+  validateUserSignUpReq,
+  authentication,
+};

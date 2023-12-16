@@ -14,6 +14,10 @@ router.get(
   ValidateUserMiddleware.validateUserSignInReq,
   UserController.signin
 );
+//refresh access token
+router.get("/refreshToken", UserController.refreshAccessTokenController);
+// signout
+router.get("/signout", UserController.signout);
 //get user/all
 
 //patch user/ using emailId

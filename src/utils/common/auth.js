@@ -26,18 +26,40 @@ async function refreshAccessToken(refreshToken) {
     const id = decoded.id;
     const accessToken = generateAccessToken({ id });
     return accessToken;
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    if (error.name == "JsonWebTokenError") {
+      throw new AppError("Invalid JWT token", StatusCodes.BAD_REQUEST);
+    }
+    if (error.name == "TokenExpiredError") {
+      throw new AppError("JWT token expired", StatusCodes.BAD_REQUEST);
+    }
+    throw new AppError(
+      "Something went wrong",
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+async function validateAccessToken(accessToken) {
+  if (!accessToken) {
+    throw new AppError(["access token not found"], StatusCodes.BAD_REQUEST);
+  }
+  try {
+    const decoded = jwt.verify(accessToken, ACCESS_TOKEN_PRIVATE_KEY);
+    const id = decoded.id;
+    return id;
   } catch (e) {
     throw new AppError([e.message], StatusCodes.BAD_REQUEST);
   }
 }
 //internal function
-async function generateAccessToken(data) {
+function generateAccessToken(data) {
   console.log("generating accessToken");
   return jwt.sign(data, ACCESS_TOKEN_PRIVATE_KEY, {
     expiresIn: ACCESS_JWT_EXPIRY,
   });
 }
-async function generateRefreshToken(data) {
+function generateRefreshToken(data) {
   return jwt.sign(data, REFRESH_TOKEN_PRIVATE_KEY, {
     expiresIn: REFRESH_JWT_EXPIRY,
   });
@@ -53,6 +75,7 @@ module.exports = {
   hashPassword,
   comparePassword,
   refreshAccessToken,
+  validateAccessToken,
   generateAccessToken,
   generateRefreshToken,
   validPassword,
