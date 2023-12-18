@@ -1,4 +1,5 @@
 const { UserRepository } = require("../repositories");
+const { UserService } = require("../services");
 const userRepository = new UserRepository();
 const { ErrorResponse } = require("../utils/common");
 const { validateAccessToken } = require("../utils/common/auth");
@@ -46,30 +47,48 @@ async function authentication(req, res, next) {
         StatusCodes.BAD_REQUEST
       );
     }
-    let accessToken = req.headers.authentication.split(" ")[1];
+    let accessToken = req.headers.authorization.split(" ")[1];
     //if accesstoken valid
-    let id = validateAccessToken(accessToken);
+    let id = await validateAccessToken(accessToken);
     // validated user
-    let user = await userRepository.id(id);
+    let user = await userRepository.get(id);
+    console.log("user", user);
     if (!user) throw new AppError(["user not found"], StatusCodes.BAD_REQUEST);
-    req.id = id;
+    req.user = user;
     next();
   } catch (error) {
-    if (error instanceof AppError) throw error;
-    if (error.name == "JsonWebTokenError") {
-      throw new AppError("Invalid JWT token", StatusCodes.BAD_REQUEST);
-    }
-    if (error.name == "TokenExpiredError") {
-      throw new AppError("JWT token expired", StatusCodes.BAD_REQUEST);
-    }
-    throw new AppError(
-      "Something went wrong",
-      StatusCodes.INTERNAL_SERVER_ERROR
-    );
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ name: error.name, message: error.message });
   }
+}
+function validateAddRoleReq(req, res, next) {
+  if (!req.userId) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: "userId" });
+  }
+  if (!req.roleId) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: "roleId" });
+  }
+  next();
+}
+async function isAdmin(req, res, next) {
+  if (!req.user) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "User not found" });
+  }
+  const response = await UserService.isAdmin(req.user);
+  if (!response) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: "User is not admin" });
+  }
+  next();
 }
 module.exports = {
   validateUserSignInReq,
   validateUserSignUpReq,
   authentication,
+  validateAddRoleReq,
+  isAdmin,
 };

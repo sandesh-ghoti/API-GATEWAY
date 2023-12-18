@@ -2,6 +2,7 @@ const { UserService } = require("../services");
 const { SuccessResponse, ErrorResponse } = require("../utils/common");
 const { StatusCodes } = require("http-status-codes");
 const { refreshAccessToken } = require("../utils/common/auth");
+const AppError = require("../utils/errors/appError");
 async function signup(req, res) {
   try {
     const response = await UserService.signup({
@@ -46,27 +47,19 @@ async function signout(req, res) {
 }
 async function refreshAccessTokenController(req, res) {
   try {
-    if (
-      !req.headers ||
-      !req.headers.authorization ||
-      !req.headers.authorization.startsWith("Bearer")
-    ) {
+    const cookies = req.cookies;
+    const refreshToken = cookies.jwt;
+    if (!refreshToken) {
       throw new AppError(
-        ["authorization header is required"],
+        ["refresh token absent in cookies"],
         StatusCodes.BAD_REQUEST
       );
     }
-    if (!req.cookies.jwt) {
-      throw new AppError(
-        ["refresh absent in cookies"],
-        StatusCodes.BAD_REQUEST
-      );
-    }
-    let acessToken = refreshAccessToken(req.cookies.jwt);
+    let acessToken = await refreshAccessToken(refreshToken);
     SuccessResponse.data = acessToken;
     return res.status(StatusCodes.OK).json(SuccessResponse);
   } catch (error) {
-    ErrorResponse.error = error;
+    ErrorResponse.error = error.message;
     return res
       .status(
         error.statusCode ? error.statusCode : StatusCodes.INTERNAL_SERVER_ERROR
@@ -74,4 +67,23 @@ async function refreshAccessTokenController(req, res) {
       .json(ErrorResponse);
   }
 }
-module.exports = { signup, signin, signout, refreshAccessTokenController };
+async function addRoleToUser(req, res) {
+  try {
+    const response = await UserService.addRoleToUser({
+      userId: req.body.userId,
+      roleId: req.body.roleId,
+    });
+    SuccessResponse.data = response;
+    return res.status(StatusCodes.OK).json(SuccessResponse);
+  } catch (error) {
+    ErrorResponse.error = error;
+    return res.status(error.statusCodeD).send(ErrorResponse);
+  }
+}
+module.exports = {
+  signup,
+  signin,
+  signout,
+  refreshAccessTokenController,
+  addRoleToUser,
+};

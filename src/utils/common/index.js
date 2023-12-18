@@ -3,4 +3,5 @@ module.exports = {
   ErrorResponse: require("./errorResponse"),
   SeatType: require("./seatTypeEnum"),
   Auth: require("./auth"),
+  RoleEnum: require("./roleEnum"),
 };

@@ -18,8 +18,13 @@ router.get(
 router.get("/refreshToken", UserController.refreshAccessTokenController);
 // signout
 router.get("/signout", UserController.signout);
-//get user/all
-
+//get user/addRoleToUser
+router.get(
+  "/addRoleToUser",
+  ValidateUserMiddleware.authentication,
+  ValidateUserMiddleware.isAdmin,
+  UserController.addRoleToUser
+);
 //patch user/ using emailId
 
 //delete user/:id

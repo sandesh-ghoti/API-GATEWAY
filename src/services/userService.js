@@ -1,7 +1,11 @@
-const { UserRepository } = require("../repositories");
+const { UserRepository, RoleRepository } = require("../repositories");
 const userRepository = new UserRepository();
+const roleRepository = new RoleRepository();
 const AppError = require("../utils/errors/appError");
 const { StatusCodes } = require("http-status-codes");
+const { RoleEnum } = require("../utils/common");
+const { User_Role } = require("../models");
+const { Op } = require("sequelize");
 const {
   hashPassword,
   comparePassword,
@@ -9,6 +13,7 @@ const {
   generateAccessToken,
   generateRefreshToken,
 } = require("../utils/common/auth");
+const { where } = require("sequelize");
 async function signup(data) {
   try {
     //if emailid not exists then create
@@ -26,6 +31,11 @@ async function signup(data) {
     data.password = await hashPassword(data.password);
     const user = await userRepository.create(data);
     user.password = "*******";
+    const role = await roleRepository.getRoleByName(RoleEnum.CUSTOMER);
+    if (!role) {
+      throw new AppError(["role not found"], StatusCodes.NOT_FOUND);
+    }
+    user.addRole(role); // this is assocition method for many to many add+modelname provided by sequelize https://sequelize.org/docs/v6/core-concepts/assocs/#foobelongstomanybar--through-baz-
     return user;
   } catch (error) {
     if (error instanceof AppError) {
@@ -105,5 +115,55 @@ async function signin(data) {
     );
   }
 }
+async function addRoleToUser(data) {
+  try {
+    const role = await roleRepository.get(data.roleId);
+    if (!role) {
+      throw new AppError(["role not found"], StatusCodes.NOT_FOUND);
+    }
+    const user = await userRepository.get(data.userId);
+    if (!user) {
+      throw new AppError(["user not found"], StatusCodes.NOT_FOUND);
+    }
+    await user.addRole(role);
+    return user;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError(
+      ["unable to add role to user"],
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+async function isAdmin(user) {
+  try {
+    const adminRole = await roleRepository.getRoleByName(RoleEnum.ADMIN);
+    if (!adminRole) {
+      throw new AppError(["admin role not found"], StatusCodes.NOT_FOUND);
+    }
+    console.log("user and adminrole", user);
+    const newuser = await userRepository.get(user.id);
 
-module.exports = { signup, signin };
+    if (!newuser) {
+      throw new AppError(["user not found"], StatusCodes.NOT_FOUND);
+    }
+    const role = await User_Role.findOne({
+      where: { [Op.and]: [{ userId: newuser.id, roleId: adminRole.id }] },
+    });
+    if (!role) {
+      throw new AppError(["user is not admin"], StatusCodes.NOT_FOUND);
+    }
+    return newuser;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError(
+      ["unable to add role to user"],
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+module.exports = { signup, signin, addRoleToUser, isAdmin };
