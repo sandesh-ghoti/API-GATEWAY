@@ -8,6 +8,7 @@ const apiRoutes = require("./routes");
 const {
   FLIGHT_SERVICE_ADDRESS,
   BOOKING_SERVICE_ADDRESS,
+  NOTIFICATION_SERVICE_ADDRESS,
 } = require("./config/serverConfig");
 const { ValidateUserMiddleware } = require("./middlerwares");
 
@@ -16,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 10 minutes
-  limit: 2,
+  limit: 10,
 });
 app.use(limiter);
 app.use(
@@ -35,6 +36,15 @@ app.use(
     target: BOOKING_SERVICE_ADDRESS,
     changeOrigin: true,
     pathRewrite: { "^/bookingService": "/" },
+  })
+);
+app.use(
+  "/notificationService",
+  ValidateUserMiddleware.authentication,
+  createProxyMiddleware({
+    target: NOTIFICATION_SERVICE_ADDRESS,
+    changeOrigin: true,
+    pathRewrite: { "^/notificationService": "/" },
   })
 );
 app.use("/api", apiRoutes);
