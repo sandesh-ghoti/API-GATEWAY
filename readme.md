@@ -5,6 +5,19 @@ This is a base node js project template, which anyone can use as it has been pre
 Lets take a look inside the `src` folder
 
 - `config` -> In this folder anything and everything regarding any configurations or setup of a library or module will be done. For example: setting up `dotenv` so that we can use the environment variables anywhere in a cleaner fashion, this is done in the `server-config.js`. One more example can be to setup you logging library that can help you to prepare meaningful logs, so configuration for this library should also be done here.
+- ##### create .env file or check what variable required in src/config/serverConfig.js
+
+```
+PORT=3000
+FLIGHT_SERVICE_ADDRESS=http://localhost:3001/
+BOOKING_SERVICE_ADDRESS=http://localhost:3002/
+NOTIFICATION_SERVICE_ADDRESS=http://localhost:3003/
+SALT_ROUND=10
+REFRESH_TOKEN_PRIVATE_KEY=e91db63d5eb386f45e8711e0d37b2c248e5685d1
+ACCESS_TOKEN_PRIVATE_KEY=e88f27478505704c9ea33bf34f8f55de30e875b01
+ACCESS_JWT_EXPIRY=1d
+REFRESH_JWT_EXPIRY=1y
+```
 
 - `routes` -> In the routes folder, we register a route and the corresponding middleware and controllers to it.
 
