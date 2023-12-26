@@ -52,9 +52,8 @@ async function authentication(req, res, next) {
     let id = await validateAccessToken(accessToken);
     // validated user
     let user = await userRepository.get(id);
-    console.log("user", user);
     if (!user) throw new AppError(["user not found"], StatusCodes.BAD_REQUEST);
-    req.user = user;
+    req.body.user = user;
     next();
   } catch (error) {
     return res

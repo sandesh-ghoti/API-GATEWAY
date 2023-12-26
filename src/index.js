@@ -1,7 +1,10 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const { rateLimit } = require("express-rate-limit");
-const { createProxyMiddleware } = require("http-proxy-middleware");
+const {
+  createProxyMiddleware,
+  fixRequestBody,
+} = require("http-proxy-middleware");
 const { serverConfig, Logger } = require("./config");
 const app = express();
 const apiRoutes = require("./routes");
@@ -26,7 +29,8 @@ app.use(
   createProxyMiddleware({
     target: FLIGHT_SERVICE_ADDRESS,
     changeOrigin: true,
-    pathRewrite: { "^/flightService": "/" },
+    onProxyReq: fixRequestBody,
+    pathRewrite: { ["^/flightService"]: "" },
   })
 );
 app.use(
@@ -35,7 +39,8 @@ app.use(
   createProxyMiddleware({
     target: BOOKING_SERVICE_ADDRESS,
     changeOrigin: true,
-    pathRewrite: { "^/bookingService": "/" },
+    onProxyReq: fixRequestBody,
+    pathRewrite: { ["^/bookingService"]: "" },
   })
 );
 app.use(
@@ -44,7 +49,8 @@ app.use(
   createProxyMiddleware({
     target: NOTIFICATION_SERVICE_ADDRESS,
     changeOrigin: true,
-    pathRewrite: { "^/notificationService": "/" },
+    onProxyReq: fixRequestBody,
+    pathRewrite: { ["^/notificationService"]: "" },
   })
 );
 app.use("/api", apiRoutes);
