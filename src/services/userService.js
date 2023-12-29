@@ -143,7 +143,6 @@ async function isAdmin(user) {
     if (!adminRole) {
       throw new AppError(["admin role not found"], StatusCodes.NOT_FOUND);
     }
-    console.log("user and adminrole", user);
     const newuser = await userRepository.get(user.id);
 
     if (!newuser) {
@@ -166,4 +165,38 @@ async function isAdmin(user) {
     );
   }
 }
-module.exports = { signup, signin, addRoleToUser, isAdmin };
+async function getAllUser() {
+  try {
+    const users = await userRepository.getAll();
+    if (!users) {
+      throw new AppError(["no users found"], StatusCodes.NOT_FOUND);
+    }
+    return users;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError(
+      ["unable to find user"],
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+async function getAllRoles() {
+  try {
+    const users = await roleRepository.getAll();
+    if (!users) {
+      throw new AppError(["no roles found"], StatusCodes.NOT_FOUND);
+    }
+    return users;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError(
+      ["unable to find roles"],
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+module.exports = { signup, signin, addRoleToUser, isAdmin ,getAllUser,getAllRoles};

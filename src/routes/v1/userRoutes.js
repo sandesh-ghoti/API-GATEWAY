@@ -25,6 +25,14 @@ router.get(
   ValidateUserMiddleware.isAdmin,
   UserController.addRoleToUser
 );
+router.get(
+  "/getAllUser",
+  UserController.getAllUser
+);
+router.get(
+  "/getAllRoles",
+  UserController.getAllRoles
+);
 //patch user/ using emailId
 
 //delete user/:id

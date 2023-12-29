@@ -56,7 +56,7 @@ async function authentication(req, res, next) {
     req.body.user = user;
     next();
   } catch (error) {
-    return res
+        return res
       .status(StatusCodes.UNAUTHORIZED)
       .json({ name: error.name, message: error.message });
   }
@@ -71,12 +71,12 @@ function validateAddRoleReq(req, res, next) {
   next();
 }
 async function isAdmin(req, res, next) {
-  if (!req.user) {
+  if (!req.body.user) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "User not found" });
   }
-  const response = await UserService.isAdmin(req.user);
+  const response = await UserService.isAdmin(req.body.user);
   if (!response) {
     return res
       .status(StatusCodes.UNAUTHORIZED)

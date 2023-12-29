@@ -80,10 +80,32 @@ async function addRoleToUser(req, res) {
     return res.status(error.statusCodeD).send(ErrorResponse);
   }
 }
+async function getAllUser(req, res) {
+  try {
+    const response = await UserService.getAllUser();
+    SuccessResponse.data = response;
+    return res.status(StatusCodes.OK).json(SuccessResponse);
+  } catch (error) {
+    ErrorResponse.error = error;
+    return res.status(error.statusCodeD).send(ErrorResponse);
+  }
+}
+async function getAllRoles(req, res) {
+  try {
+    const response = await UserService.getAllRoles();
+    SuccessResponse.data = response;
+    return res.status(StatusCodes.OK).json(SuccessResponse);
+  } catch (error) {
+    ErrorResponse.error = error;
+    return res.status(error.statusCodeD).send(ErrorResponse);
+  }
+}
 module.exports = {
   signup,
   signin,
   signout,
   refreshAccessTokenController,
   addRoleToUser,
+  getAllUser,
+  getAllRoles
 };
