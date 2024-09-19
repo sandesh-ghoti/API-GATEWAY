@@ -148,10 +148,12 @@ async function isAdmin(user) {
     if (!newuser) {
       throw new AppError(["user not found"], StatusCodes.NOT_FOUND);
     }
+    console.log('checking is user admin');
     const role = await User_Role.findOne({
       where: { [Op.and]: [{ userId: newuser.id, roleId: adminRole.id }] },
     });
     if (!role) {
+      console.log('user is not admin')
       throw new AppError(["user is not admin"], StatusCodes.NOT_FOUND);
     }
     return newuser;
@@ -160,7 +162,7 @@ async function isAdmin(user) {
       throw error;
     }
     throw new AppError(
-      ["unable to add role to user"],
+      ["unable to check user is admin"],
       StatusCodes.INTERNAL_SERVER_ERROR
     );
   }

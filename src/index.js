@@ -15,13 +15,15 @@ const {
 } = require("./config/serverConfig");
 const { ValidateUserMiddleware } = require("./middlerwares");
 
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minutes
+  limit: 10,
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-const limiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 10 minutes
-  limit: 10,
-});
+
 app.use(limiter);
 app.use(
   "/flightService",

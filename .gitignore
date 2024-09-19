@@ -3,4 +3,3 @@ src/.env
 src/combined.log
 src/config/config.json
 combined.log
-Dockerfile
