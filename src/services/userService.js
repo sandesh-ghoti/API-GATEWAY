@@ -152,7 +152,10 @@ async function isAdmin(user) {
       where: { [Op.and]: [{ userId: newuser.id, roleId: adminRole.id }] },
     });
     if (!role) {
-      throw new AppError(["user is not admin"], StatusCodes.NOT_FOUND);
+      throw new AppError(
+        ["authenticated user is not admin"],
+        StatusCodes.NOT_FOUND
+      );
     }
     return newuser;
   } catch (error) {
@@ -160,7 +163,7 @@ async function isAdmin(user) {
       throw error;
     }
     throw new AppError(
-      ["unable to add role to user"],
+      ["unable to check user is admin"],
       StatusCodes.INTERNAL_SERVER_ERROR
     );
   }
@@ -199,4 +202,11 @@ async function getAllRoles() {
     );
   }
 }
-module.exports = { signup, signin, addRoleToUser, isAdmin ,getAllUser,getAllRoles};
+module.exports = {
+  signup,
+  signin,
+  addRoleToUser,
+  isAdmin,
+  getAllUser,
+  getAllRoles,
+};
