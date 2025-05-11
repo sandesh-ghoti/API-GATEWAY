@@ -1,4 +1,4 @@
-FROM node
+FROM node:23.11.0-bookworm-slim
 
 WORKDIR /developer/nodejs/api-gateway
 
