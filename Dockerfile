@@ -1,4 +1,4 @@
-FROM node:23.11.0-alpine3.21
+FROM node:23.11.1-alpine3.21
 
 WORKDIR /developer/nodejs/api-gateway
 
